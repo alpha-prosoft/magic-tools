@@ -8,7 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASHRC="$HOME/.bashrc"
 MARKER="# >>> tools >>>"
-SOURCE_LINE="source ~/config/tools/shell-init.bash $MARKER"
+SOURCE_LINE="source ~/.config/tools/shell-init.bash $MARKER"
 
 JDK_URL="https://corretto.aws/downloads/latest/amazon-corretto-21-x64-linux-jdk.tar.gz"
 JAVA_INSTALL_DIR="/opt/java"
