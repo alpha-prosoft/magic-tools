@@ -7,8 +7,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASHRC="$HOME/.bashrc"
-MARKER_BEGIN="# >>> magic-ide >>>"
-MARKER_END="# <<< magic-ide <<<"
+MARKER="# >>> magic-ide >>>"
+SOURCE_LINE="source ~/magic-ide/shell-init.bash $MARKER"
 
 JDK_URL="https://corretto.aws/downloads/latest/amazon-corretto-21-x64-linux-jdk.tar.gz"
 JAVA_INSTALL_DIR="/opt/java"
@@ -53,29 +53,21 @@ install_jdk() {
 }
 
 # ── Shell config ─────────────────────────────────────────────────────
-# Sources shell-init.bash from .bashrc via a marker block.
-# Re-runs replace the block in-place (awk -> tmp -> mv = atomic).
+# Single source line in .bashrc tagged with a marker comment.
+# Re-runs replace it in-place via sed; first run appends.
 
 configure_shell() {
   local init_file="$SCRIPT_DIR/shell-init.bash"
   [[ -f "$init_file" ]] || error "shell-init.bash not found at $init_file"
 
-  local block
-  block="$(printf '%s\n' "$MARKER_BEGIN" "source \"$init_file\"" "$MARKER_END")"
-
   touch "$BASHRC"
 
-  if grep -qF "$MARKER_BEGIN" "$BASHRC"; then
-    info "Replacing magic-ide block in $BASHRC"
-    local tmp; tmp=$(mktemp)
-    awk -v begin="$MARKER_BEGIN" -v end="$MARKER_END" -v new="$block" '
-      $0 == begin { print new; skip=1; next }
-      skip && $0 == end { skip=0; next }
-      !skip { print }
-    ' "$BASHRC" > "$tmp" && mv "$tmp" "$BASHRC"
+  if grep -qF "$MARKER" "$BASHRC"; then
+    info "Replacing magic-ide line in $BASHRC"
+    sed -i "s|.*${MARKER}.*|${SOURCE_LINE}|" "$BASHRC"
   else
-    info "Appending magic-ide block to $BASHRC"
-    printf '\n%s\n' "$block" >> "$BASHRC"
+    info "Appending magic-ide line to $BASHRC"
+    printf '\n%s\n' "$SOURCE_LINE" >> "$BASHRC"
   fi
 
   # shellcheck disable=SC1090
