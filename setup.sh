@@ -28,6 +28,7 @@ install_packages() {
     git \
     curl \
     unzip \
+    rlwrap \
     nodejs \
     npm \
     python3 \
@@ -50,6 +51,19 @@ install_jdk() {
 
   info "JDK installed to $JAVA_INSTALL_DIR"
   "$JAVA_INSTALL_DIR/bin/java" -version
+}
+
+# ── Clojure CLI ──────────────────────────────────────────────────────
+
+install_clojure() {
+  info "Installing Clojure CLI …"
+  local tmp; tmp=$(mktemp)
+  curl -fSL -o "$tmp" https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh
+  chmod +x "$tmp"
+  sudo "$tmp"
+  rm -f "$tmp"
+  info "Clojure installed"
+  clojure --version
 }
 
 # ── Shell config ─────────────────────────────────────────────────────
@@ -82,6 +96,7 @@ main() {
   echo
   install_packages
   install_jdk
+  install_clojure
   configure_shell
   echo
   info "=== Setup complete ==="
