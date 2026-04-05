@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# magic-ide install script
-# Installs general dev tooling — nvim is handled by its own setup.sh.
+# tools install script
+# Installs general dev tooling.
 # Re-runnable: shell config block is replaced in-place via markers.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASHRC="$HOME/.bashrc"
-MARKER="# >>> magic-ide >>>"
-SOURCE_LINE="source ~/magic-ide/shell-init.bash $MARKER"
+MARKER="# >>> tools >>>"
+SOURCE_LINE="source ~/config/tools/shell-init.bash $MARKER"
 
 JDK_URL="https://corretto.aws/downloads/latest/amazon-corretto-21-x64-linux-jdk.tar.gz"
 JAVA_INSTALL_DIR="/opt/java"
@@ -63,10 +63,10 @@ configure_shell() {
   touch "$BASHRC"
 
   if grep -qF "$MARKER" "$BASHRC"; then
-    info "Replacing magic-ide line in $BASHRC"
+    info "Replacing tools line in $BASHRC"
     sed -i "s|.*${MARKER}.*|${SOURCE_LINE}|" "$BASHRC"
   else
-    info "Appending magic-ide line to $BASHRC"
+    info "Appending tools line to $BASHRC"
     printf '\n%s\n' "$SOURCE_LINE" >> "$BASHRC"
   fi
 
@@ -78,7 +78,7 @@ configure_shell() {
 # ── Main ─────────────────────────────────────────────────────────────
 
 main() {
-  info "=== magic-ide Setup ==="
+  info "=== Tools Setup ==="
   echo
   install_packages
   install_jdk
