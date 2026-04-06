@@ -15,9 +15,12 @@ JAVA_INSTALL_DIR="/opt/java"
 
 # ── Helpers ───────────────────────────────────────────────────────────
 
-info()  { printf '\033[1;34m[INFO]\033[0m  %s\n' "$*"; }
-warn()  { printf '\033[1;33m[WARN]\033[0m  %s\n' "$*"; }
-error() { printf '\033[1;31m[ERROR]\033[0m %s\n' "$*"; exit 1; }
+info() { printf '\033[1;34m[INFO]\033[0m  %s\n' "$*"; }
+warn() { printf '\033[1;33m[WARN]\033[0m  %s\n' "$*"; }
+error() {
+  printf '\033[1;31m[ERROR]\033[0m %s\n' "$*"
+  exit 1
+}
 
 # ── System packages ──────────────────────────────────────────────────
 
@@ -28,12 +31,14 @@ install_packages() {
     git \
     curl \
     unzip \
-    rlwrap \
     nodejs \
-    npm \
+    maven \
+    net-tools \
+    direnv npm \
     python3 \
     python3-pip \
-    python3-venv
+    python3-venv \
+    rlwrap
   info "System packages installed"
 }
 
@@ -41,7 +46,8 @@ install_packages() {
 
 install_jdk() {
   info "Installing Amazon Corretto JDK 21 …"
-  local tmp; tmp=$(mktemp)
+  local tmp
+  tmp=$(mktemp)
   curl -fSL -o "$tmp" "$JDK_URL"
 
   sudo rm -rf "$JAVA_INSTALL_DIR"
@@ -53,17 +59,18 @@ install_jdk() {
   "$JAVA_INSTALL_DIR/bin/java" -version
 }
 
-# ── Clojure CLI ──────────────────────────────────────────────────────
+# ── Clojure ──────────────────────────────────────────────────────────
 
 install_clojure() {
-  info "Installing Clojure CLI …"
-  local tmp; tmp=$(mktemp)
-  curl -fSL -o "$tmp" https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh
-  chmod +x "$tmp"
-  sudo "$tmp"
-  rm -f "$tmp"
-  info "Clojure installed"
-  clojure --version
+  info "Installing Clojure …"
+  local tmp_dir
+  tmp_dir=$(mktemp -d)
+  curl -fSL -O --output-dir "$tmp_dir" \
+    https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh
+  chmod +x "$tmp_dir/linux-install.sh"
+  sudo "$tmp_dir/linux-install.sh"
+  rm -rf "$tmp_dir"
+  info "Clojure installed — $(clojure --version 2>&1 | head -1)"
 }
 
 # ── Shell config ─────────────────────────────────────────────────────
@@ -81,7 +88,7 @@ configure_shell() {
     sed -i "s|.*${MARKER}.*|${SOURCE_LINE}|" "$BASHRC"
   else
     info "Appending tools line to $BASHRC"
-    printf '\n%s\n' "$SOURCE_LINE" >> "$BASHRC"
+    printf '\n%s\n' "$SOURCE_LINE" >>"$BASHRC"
   fi
 
   # shellcheck disable=SC1090
